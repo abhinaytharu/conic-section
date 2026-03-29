@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conic Sections Visualizer | Interactive Math</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050507;
+            --card-bg: rgba(20, 20, 25, 0.7);
+            --accent-p: #00f2ff;
+            --accent-e: #ff0077;
+            --accent-h: #bc00ff;
+            --text: #e0e0e6;
+            --text-dim: #9494a3;
+            --focus: #ff3366;
+            --vertex: #ffffff;
+            --directrix: #ffcc00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent-p), var(--accent-e), var(--accent-h));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+        }
+
+        p.subtitle {
+            color: var(--text-dim);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1600px;
+        }
+
+        .viz-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 24px;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .viz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .viz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .viz-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .viz-property {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            color: var(--text-dim);
+        }
+
+        .canvas-container {
+            width: 100%;
+            aspect-ratio: 1.2 / 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            position: relative;
+            cursor: crosshair;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .stats {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .formula-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--vertex);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .legend {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .legend span { color: var(--text); font-weight: 600; }
+
+        .label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            accent-color: var(--accent-p);
+            cursor: pointer;
+        }
+
+        .parabola .viz-title { color: var(--accent-p); }
+        .ellipse .viz-title { color: var(--accent-e); }
+        .hyperbola .viz-title { color: var(--accent-h); }
+        
+        .ellipse input[type="range"] { accent-color: var(--accent-e); }
+        .hyperbola input[type="range"] { accent-color: var(--accent-h); }
+
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Geometric Intelligence</h1>
+    <p class="subtitle">Interact with the fundamental properties of conic sections. Drag your cursor over the charts to explore the defining loci.</p>
+
+    <div class="container">
+        <!-- PARABOLA -->
+        <div class="viz-card parabola">
+            <div class="viz-header">
+                <div class="viz-title">Parabola</div>
+                <div class="viz-property">PF = PD</div>
+            </div>
+            <div class="canvas-container" id="p-container">
+                <canvas id="p-canvas"></canvas>
+                <div class="hint">Move Mouse Here</div>
+            </div>
+            <div class="formula-section">
+                <div class="formula">y = x² / 4p</div>
+                <div class="legend">
+                    <div><span>p</span>: Vertex to Focus</div>
+                    <div><span>(x, y)</span>: Point on Curve</div>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="label">PF (to Focus)</div>
+                    <div class="value" id="p-dist-f" style="color: var(--focus)">0.00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">PD (to Directrix)</div>
+                    <div class="value" id="p-dist-d" style="color: var(--directrix)">0.00</div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="label">Scale (p)</div>
+                <input type="range" id="p-slider" min="20" max="100" value="50">
+                <span id="p-val" class="value">50</span>
+            </div>
+        </div>
+
+        <!-- ELLIPSE -->
+        <div class="viz-card ellipse">
+            <div class="viz-header">
+                <div class="viz-title">Ellipse</div>
+                <div class="viz-property">PF1 + PF2 = 2a</div>
+            </div>
+            <div class="canvas-container" id="e-container">
+                <canvas id="e-canvas"></canvas>
+                <div class="hint">Move Mouse Here</div>
+            </div>
+            <div class="formula-section">
+                <div class="formula">x²/a² + y²/b² = 1</div>
+                <div class="legend">
+                    <div><span>2a</span>: Major Axis</div>
+                    <div><span>a</span>: Semi-Major</div>
+                    <div><span>2b</span>: Minor Axis</div>
+                    <div><span>b</span>: Semi-Minor</div>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="label">d1 + d2 Sum</div>
+                    <div class="value" id="e-sum" style="color: var(--accent-e)">0.00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Target (2a)</div>
+                    <div class="value" id="e-target" style="color: var(--vertex)">0.00</div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="label">Param (a)</div>
+                <input type="range" id="e-slider" min="60" max="150" value="100">
+                <span id="e-val" class="value">100</span>
+            </div>
+        </div>
+
+        <!-- HYPERBOLA -->
+        <div class="viz-card hyperbola">
+            <div class="viz-header">
+                <div class="viz-title">Hyperbola</div>
+                <div class="viz-property">|PF1 - PF2| = 2a</div>
+            </div>
+            <div class="canvas-container" id="h-container">
+                <canvas id="h-canvas"></canvas>
+                <div class="hint">Move Mouse Here</div>
+            </div>
+            <div class="formula-section">
+                <div class="formula">x²/a² - y²/b² = 1</div>
+                <div class="legend">
+                    <div><span>2a</span>: Transverse Axis</div>
+                    <div><span>a</span>: Semi-Transverse</div>
+                    <div><span>2b</span>: Conjugate Axis</div>
+                    <div><span>b</span>: Semi-Conjugate</div>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="label">|d1 - d2| Diff</div>
+                    <div class="value" id="h-diff" style="color: var(--accent-h)">0.00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="label">Target (2a)</div>
+                    <div class="value" id="h-target" style="color: var(--vertex)">0.00</div>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="label">Param (a)</div>
+                <input type="range" id="h-slider" min="30" max="120" value="60">
+                <span id="h-val" class="value">60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pCanvas = document.getElementById('p-canvas');
+        const eCanvas = document.getElementById('e-canvas');
+        const hCanvas = document.getElementById('h-canvas');
+        const pCtx = pCanvas.getContext('2d');
+        const eCtx = eCanvas.getContext('2d');
+        const hCtx = hCanvas.getContext('2d');
+
+        let pParam = 50;
+        let eA = 100, eB = 60;
+        let hA = 60, hB = 40;
+
+        let mouseP = { x: 0, y: 0, hover: false };
+        let mouseE = { x: 0, y: 0, hover: false };
+        let mouseH = { x: 0, y: 0, hover: false };
+
+        function resize() {
+            [pCanvas, eCanvas, hCanvas].forEach(c => {
+                const rect = c.parentElement.getBoundingClientRect();
+                c.width = rect.width * window.devicePixelRatio;
+                c.height = rect.height * window.devicePixelRatio;
+            });
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        function addMouseListener(container, mouseObj, canvas) {
+            container.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                mouseObj.x = (e.clientX - rect.left) - rect.width/2;
+                mouseObj.y = rect.height/2 - (e.clientY - rect.top);
+                mouseObj.hover = true;
+            });
+            container.addEventListener('mouseleave', () => {
+                mouseObj.hover = false;
+            });
+        }
+
+        addMouseListener(document.getElementById('p-container'), mouseP, pCanvas);
+        addMouseListener(document.getElementById('e-container'), mouseE, eCanvas);
+        addMouseListener(document.getElementById('h-container'), mouseH, hCanvas);
+
+        document.getElementById('p-slider').addEventListener('input', (e) => {
+            pParam = parseInt(e.target.value);
+            document.getElementById('p-val').textContent = pParam;
+        });
+        document.getElementById('e-slider').addEventListener('input', (e) => {
+            eA = parseInt(e.target.value);
+            document.getElementById('e-val').textContent = eA;
+        });
+        document.getElementById('h-slider').addEventListener('input', (e) => {
+            hA = parseInt(e.target.value);
+            document.getElementById('h-val').textContent = hA;
+        });
+
+        function drawGrid(ctx, w, h) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for(let x = -w/2; x < w/2; x+=40) { ctx.moveTo(x, -h/2); ctx.lineTo(x, h/2); }
+            for(let y = -h/2; y < h/2; y+=40) { ctx.moveTo(-w/2, y); ctx.lineTo(w/2, y); }
+            ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+            ctx.beginPath(); ctx.moveTo(-w/2, 0); ctx.lineTo(w/2, 0); ctx.moveTo(0, -h/2); ctx.lineTo(0, h/2); ctx.stroke();
+        }
+
+        function drawAnatomyLines(ctx, a, b, accentA, accentB) {
+            ctx.setLineDash([4, 4]);
+            // a line
+            ctx.strokeStyle = accentA;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(a, 0); ctx.stroke();
+            ctx.fillStyle = accentA; ctx.font = 'bold 12px Outfit'; ctx.fillText('a', a/2, -5);
+            // b line
+            if(b) {
+                ctx.strokeStyle = accentB;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, b); ctx.stroke();
+                ctx.fillStyle = accentB; ctx.fillText('b', 5, b/2);
+            }
+            ctx.setLineDash([]);
+        }
+
+        function animate() {
+            const dpr = window.devicePixelRatio;
+
+            // --- PARABOLA ---
+            pCtx.save();
+            pCtx.clearRect(0,0,pCanvas.width, pCanvas.height);
+            pCtx.translate(pCanvas.width/2, pCanvas.height/2);
+            pCtx.scale(dpr, -dpr);
+            drawGrid(pCtx, pCanvas.width/dpr, pCanvas.height/dpr);
+            pCtx.strokeStyle = '#00f2ff'; pCtx.lineWidth = 2.5; pCtx.beginPath();
+            for(let x = -300; x <= 300; x++) { let y = (x*x)/(4*pParam); if(x===-300) pCtx.moveTo(x,y); else pCtx.lineTo(x,y); }
+            pCtx.stroke();
+            pCtx.strokeStyle = '#ffcc00'; pCtx.setLineDash([5,5]); pCtx.beginPath(); pCtx.moveTo(-300,-pParam); pCtx.lineTo(300,-pParam); pCtx.stroke(); pCtx.setLineDash([]);
+            pCtx.fillStyle = '#ff3366'; pCtx.beginPath(); pCtx.arc(0, pParam, 5, 0, 7); pCtx.fill();
+            
+            if(mouseP.hover) {
+                let px = mouseP.x, py = (px*px)/(4*pParam);
+                pCtx.strokeStyle = '#ff3366'; pCtx.beginPath(); pCtx.moveTo(px,py); pCtx.lineTo(0,pParam); pCtx.stroke();
+                pCtx.strokeStyle = '#ffcc00'; pCtx.beginPath(); pCtx.moveTo(px,py); pCtx.lineTo(px,-pParam); pCtx.stroke();
+                pCtx.fillStyle = '#00ff88'; pCtx.beginPath(); pCtx.arc(px,py,7,0,7); pCtx.fill();
+                document.getElementById('p-dist-f').textContent = Math.sqrt(px*px + (py-pParam)**2).toFixed(2);
+                document.getElementById('p-dist-d').textContent = Math.abs(py+pParam).toFixed(2);
+            } else {
+                drawAnatomyLines(pCtx, 0, pParam, '#ff3366', '#ff3366');
+                pCtx.fillStyle = '#ffffff'; pCtx.fillText('p', 5, pParam/2);
+            }
+            pCtx.restore();
+
+            // --- ELLIPSE ---
+            eCtx.save();
+            eCtx.clearRect(0,0,eCanvas.width, eCanvas.height);
+            eCtx.translate(eCanvas.width/2, eCanvas.height/2);
+            eCtx.scale(dpr, -dpr);
+            drawGrid(eCtx, eCanvas.width/dpr, eCanvas.height/dpr);
+            let ec = Math.sqrt(Math.abs(eA*eA - eB*eB));
+            eCtx.strokeStyle = '#ff0077'; eCtx.lineWidth = 2.5; eCtx.beginPath();
+            for(let t=0; t<Math.PI*2.1; t+=0.05) { eCtx.lineTo(eA*Math.cos(t), eB*Math.sin(t)); }
+            eCtx.stroke();
+            eCtx.fillStyle = '#ff3366'; eCtx.beginPath(); eCtx.arc(ec,0,5,0,7); eCtx.fill(); eCtx.beginPath(); eCtx.arc(-ec,0,5,0,7); eCtx.fill();
+            
+            if(mouseE.hover) {
+                let eang = Math.atan2(mouseE.y, mouseE.x), epx = eA*Math.cos(eang), epy = eB*Math.sin(eang);
+                eCtx.strokeStyle = 'rgba(255,51,102,0.5)'; eCtx.beginPath(); eCtx.moveTo(epx,epy); eCtx.lineTo(ec,0); eCtx.stroke();
+                eCtx.strokeStyle = 'rgba(255,119,0,0.5)'; eCtx.beginPath(); eCtx.moveTo(epx,epy); eCtx.lineTo(-ec,0); eCtx.stroke();
+                eCtx.fillStyle = '#00ff88'; eCtx.beginPath(); eCtx.arc(epx,epy,7,0,7); eCtx.fill();
+                const ed1 = Math.sqrt((epx-ec)**2+epy**2), ed2 = Math.sqrt((epx+ec)**2+epy**2);
+                document.getElementById('e-sum').textContent = (ed1 + ed2).toFixed(2);
+                document.getElementById('e-target').textContent = (2*eA).toFixed(2);
+            } else {
+                drawAnatomyLines(eCtx, eA, eB, '#00d1ff', '#ffcc00');
+            }
+            eCtx.restore();
+
+            // --- HYPERBOLA ---
+            hCtx.save();
+            hCtx.clearRect(0,0,hCanvas.width, hCanvas.height);
+            hCtx.translate(hCanvas.width/2, hCanvas.height/2);
+            hCtx.scale(dpr, -dpr);
+            drawGrid(hCtx, hCanvas.width/dpr, hCanvas.height/dpr);
+            let hc = Math.sqrt(hA*hA + hB*hB);
+            hCtx.strokeStyle = '#bc00ff'; hCtx.lineWidth = 2.5;
+            [-1, 1].forEach(s => {
+                hCtx.beginPath(); for(let x=hA; x<300; x++) { let y = hB*Math.sqrt((x/hA)**2-1); if(x===hA) hCtx.moveTo(s*x,y); else hCtx.lineTo(s*x,y); } hCtx.stroke();
+                hCtx.beginPath(); for(let x=hA; x<300; x++) { let y = -hB*Math.sqrt((x/hA)**2-1); if(x===hA) hCtx.moveTo(s*x,y); else hCtx.lineTo(s*x,y); } hCtx.stroke();
+            });
+            hCtx.fillStyle = '#ff3366'; hCtx.beginPath(); hCtx.arc(hc,0,5,0,7); hCtx.fill(); hCtx.beginPath(); hCtx.arc(-hc,0,5,0,7); hCtx.fill();
+            
+            if(mouseH.hover) {
+                let hpx = Math.max(Math.abs(mouseH.x), hA) * (mouseH.x < 0 ? -1 : 1), hpy = hB*Math.sqrt((hpx/hA)**2-1) * (mouseH.y < 0 ? -1 : 1);
+                hCtx.strokeStyle = 'rgba(255,51,102,0.5)'; hCtx.beginPath(); hCtx.moveTo(hpx,hpy); hCtx.lineTo(hc,0); hCtx.stroke();
+                hCtx.strokeStyle = 'rgba(255,119,0,0.5)'; hCtx.beginPath(); hCtx.moveTo(hpx,hpy); hCtx.lineTo(-hc,0); hCtx.stroke();
+                hCtx.fillStyle = '#00ff88'; hCtx.beginPath(); hCtx.arc(hpx,hpy,7,0,7); hCtx.fill();
+                document.getElementById('h-diff').textContent = Math.abs(Math.sqrt((hpx-hc)**2+hpy**2) - Math.sqrt((hpx+hc)**2+hpy**2)).toFixed(2);
+                document.getElementById('h-target').textContent = (2*hA).toFixed(2);
+            } else {
+                drawAnatomyLines(hCtx, hA, hB, '#00d1ff', '#ffcc00');
+            }
+            hCtx.restore();
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>
