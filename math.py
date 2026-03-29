@@ -59,4 +59,4 @@ ax3.set_title("Hyperbola Anatomy", color='#a200ff', fontsize=14, pad=15)
 ax3.set_xlim(-10, 10); ax3.set_ylim(-6, 7); ax3.set_aspect('equal'); ax3.grid(alpha=0.1)
 
 plt.tight_layout()
-plt.show()
+plt.show()
