@@ -21,8 +21,11 @@ ax1.axhline(-p_para, color='#ffcc00', linestyle='--', label='Directrix')
 ax1.annotate('', xy=(0, p_para), xytext=(0, 0), arrowprops=dict(arrowstyle='<->', color='#ffffff'))
 ax1.text(0.2, p_para/2, 'p', color='#ffffff', fontsize=12, fontweight='bold')
 # General Equation
-info_p = "Eq: y = x² / 4p\np: dist(Vertex, Focus)\nDirectrix: y = -p"
+info_p = "Eq: y = x² / 4p\np: dist(Vertex, Focus)\nDirectrix: y = -p\ne: 1.00 (Parabola)"
 ax1.text(-9, 8, info_p, color='white', bbox=dict(facecolor='#00d1ff', alpha=0.2, boxstyle='round,pad=0.5'))
+ax1.text(0.3, p_para, 'F', color='#ff3366', fontweight='bold', fontsize=12)
+ax1.text(0.3, 0.1, 'V', color='#ffffff', fontweight='bold', fontsize=12)
+ax1.text(8, -p_para + 0.2, 'Directrix (L)', color='#ffcc00', fontsize=10)
 ax1.set_title("Parabola Anatomy", color='#00d1ff', fontsize=14, pad=15)
 ax1.set_xlim(-10, 10); ax1.set_ylim(-3, 10); ax1.set_aspect('equal'); ax1.grid(alpha=0.1)
 
@@ -36,8 +39,17 @@ ax2.plot([0, 0], [-b_ell, b_ell], color='#ffcc00', linewidth=2, linestyle='--', 
 ax2.text(a_ell/2, 0.2, 'a', color='#00d1ff', fontsize=12, fontweight='bold')
 ax2.text(0.2, b_ell/2, 'b', color='#ffcc00', fontsize=12, fontweight='bold')
 # General Equation & Terms
-info_e = "Eq: x²/a² + y²/b² = 1\nMajor Axis: 2a\nMinor Axis: 2b\na: Semi-Major Axis\nb: Semi-Minor Axis"
+c_ell = np.sqrt(a_ell**2 - b_ell**2)
+e_ell = c_ell / a_ell
+info_e = f"Eq: x²/a² + y²/b² = 1\nMajor Axis: 2a\nMinor Axis: 2b\ne: {e_ell:.2f} (Ellipse)"
 ax2.text(-6.5, -4.5, info_e, color='white', bbox=dict(facecolor='#ff0077', alpha=0.2, boxstyle='round,pad=0.5'))
+# Labels F1, F2, V1, V2
+ax2.text(c_ell, 0.3, 'F1', color='#ff3366', fontweight='bold')
+ax2.text(-c_ell - 0.8, 0.3, 'F2', color='#ff3366', fontweight='bold')
+ax2.text(a_ell, 0.3, 'V1', color='#ffffff', fontweight='bold')
+ax2.text(-a_ell - 0.8, 0.3, 'V2', color='#ffffff', fontweight='bold')
+ax2.scatter([c_ell, -c_ell], [0, 0], color='#ff3366', s=50)
+ax2.scatter([a_ell, -a_ell], [0, 0], color='#ffffff', s=50)
 ax2.set_title("Ellipse Anatomy", color='#ff0077', fontsize=14, pad=15)
 ax2.set_xlim(-7, 7); ax2.set_ylim(-5, 5); ax2.set_aspect('equal'); ax2.grid(alpha=0.1)
 
@@ -53,8 +65,17 @@ ax3.plot([0, 0], [-b_hyp, b_hyp], color='#ffcc00', linewidth=2, linestyle='--', 
 ax3.text(a_hyp/2, 0.2, 'a', color='#00d1ff', fontsize=12, fontweight='bold')
 ax3.text(0.2, b_hyp/2, 'b', color='#ffcc00', fontsize=12, fontweight='bold')
 # General Equation & Terms
-info_h = "Eq: x²/a² - y²/b² = 1\nTransverse Axis: 2a\nConjugate Axis: 2b\na: Semi-Transverse\nb: Semi-Conjugate"
+c_hyp = np.sqrt(a_hyp**2 + b_hyp**2)
+e_hyp = c_hyp / a_hyp
+info_h = f"Eq: x²/a² - y²/b² = 1\nTransverse Axis: 2a\nConjugate Axis: 2b\ne: {e_hyp:.2f} (Hyperbola)"
 ax3.text(-9, 5, info_h, color='white', bbox=dict(facecolor='#a200ff', alpha=0.2, boxstyle='round,pad=0.5'))
+# Labels F1, F2, V1, V2
+ax3.text(c_hyp, 0.3, 'F1', color='#ff3366', fontweight='bold')
+ax3.text(-c_hyp - 1.2, 0.3, 'F2', color='#ff3366', fontweight='bold')
+ax3.text(a_hyp, 0.3, 'V1', color='#ffffff', fontweight='bold')
+ax3.text(-a_hyp - 1.2, 0.3, 'V2', color='#ffffff', fontweight='bold')
+ax3.scatter([c_hyp, -c_hyp], [0, 0], color='#ff3366', s=50)
+ax3.scatter([a_hyp, -a_hyp], [0, 0], color='#ffffff', s=50)
 ax3.set_title("Hyperbola Anatomy", color='#a200ff', fontsize=14, pad=15)
 ax3.set_xlim(-10, 10); ax3.set_ylim(-6, 7); ax3.set_aspect('equal'); ax3.grid(alpha=0.1)
 

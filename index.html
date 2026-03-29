@@ -236,6 +236,10 @@
                     <div class="label">PD (to Directrix)</div>
                     <div class="value" id="p-dist-d" style="color: var(--directrix)">0.00</div>
                 </div>
+                <div class="stat-item" style="grid-column: span 2;">
+                    <div class="label">Eccentricity (e)</div>
+                    <div class="value" id="p-ecc" style="color: var(--accent-p)">1.00</div>
+                </div>
             </div>
             <div class="controls">
                 <div class="label">Scale (p)</div>
@@ -272,6 +276,10 @@
                     <div class="label">Target (2a)</div>
                     <div class="value" id="e-target" style="color: var(--vertex)">0.00</div>
                 </div>
+                <div class="stat-item" style="grid-column: span 2;">
+                    <div class="label">Eccentricity (e)</div>
+                    <div class="value" id="e-ecc" style="color: var(--accent-e)">0.00</div>
+                </div>
             </div>
             <div class="controls">
                 <div class="label">Param (a)</div>
@@ -307,6 +315,10 @@
                 <div class="stat-item">
                     <div class="label">Target (2a)</div>
                     <div class="value" id="h-target" style="color: var(--vertex)">0.00</div>
+                </div>
+                <div class="stat-item" style="grid-column: span 2;">
+                    <div class="label">Eccentricity (e)</div>
+                    <div class="value" id="h-ecc" style="color: var(--accent-h)">0.00</div>
                 </div>
             </div>
             <div class="controls">
@@ -376,6 +388,17 @@
             ctx.restore();
         }
 
+        function drawLabel(ctx, text, x, y, color) {
+            ctx.save();
+            ctx.scale(1, -1);
+            ctx.fillStyle = color;
+            ctx.font = 'bold 16px Outfit';
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.fillText(text, x + 10, -y - 10);
+            ctx.restore();
+        }
+
         function animate() {
             const dpr = window.devicePixelRatio;
             // --- PARABOLA ---
@@ -384,11 +407,16 @@
             for(let x = -300; x <= 300; x++) { let y = (x*x)/(4*pParam); if(x===-300) pCtx.moveTo(x,y); else pCtx.lineTo(x,y); } pCtx.stroke();
             pCtx.strokeStyle = '#ffcc00'; pCtx.setLineDash([5,5]); pCtx.beginPath(); pCtx.moveTo(-300,-pParam); pCtx.lineTo(300,-pParam); pCtx.stroke(); pCtx.setLineDash([]);
             pCtx.fillStyle = '#ff3366'; pCtx.beginPath(); pCtx.arc(0, pParam, 5, 0, 7); pCtx.fill();
+            drawLabel(pCtx, 'F', 0, pParam, '#ff3366');
+            drawLabel(pCtx, 'V', 0, 0, '#ffffff');
+            drawLabel(pCtx, 'L', 260, -pParam, '#ffcc00');
+
             if(mouseP.hover) {
                 let px = mouseP.x, py = (px*px)/(4*pParam);
                 pCtx.strokeStyle = '#ff3366'; pCtx.beginPath(); pCtx.moveTo(px,py); pCtx.lineTo(0,pParam); pCtx.stroke();
                 pCtx.strokeStyle = '#ffcc00'; pCtx.beginPath(); pCtx.moveTo(px,py); pCtx.lineTo(px,-pParam); pCtx.stroke();
                 pCtx.fillStyle = '#00ff88'; pCtx.beginPath(); pCtx.arc(px,py,7,0,7); pCtx.fill();
+                drawLabel(pCtx, 'P', px, py, '#00ff88');
                 document.getElementById('p-dist-f').textContent = Math.sqrt(px*px + (py-pParam)**2).toFixed(2);
                 document.getElementById('p-dist-d').textContent = Math.abs(py+pParam).toFixed(2);
             } else {
@@ -399,15 +427,22 @@
 
             // --- ELLIPSE ---
             eCtx.save(); eCtx.clearRect(0,0,eCanvas.width, eCanvas.height); eCtx.translate(eCanvas.width/2, eCanvas.height/2); eCtx.scale(dpr, -dpr); drawG(eCtx, eCanvas.width/dpr, eCanvas.height/dpr);
-            let ec = Math.sqrt(Math.abs(eA*eA - eB*eB));
+            let ec = Math.sqrt(Math.abs(eA*eA - eB*eB)), ee = ec/eA;
             eCtx.strokeStyle = '#ff0077'; eCtx.lineWidth = 2.5; eCtx.beginPath();
             for(let t=0; t<Math.PI*2.1; t+=0.05) { eCtx.lineTo(eA*Math.cos(t), eB*Math.sin(t)); } eCtx.stroke();
             eCtx.fillStyle = '#ff3366'; eCtx.beginPath(); eCtx.arc(ec,0,5,0,7); eCtx.fill(); eCtx.beginPath(); eCtx.arc(-ec,0,5,0,7); eCtx.fill();
+            drawLabel(eCtx, 'F1', ec, 0, '#ff3366');
+            drawLabel(eCtx, 'F2', -ec, 0, '#ff3366');
+            drawLabel(eCtx, 'V1', eA, 0, '#ffffff');
+            drawLabel(eCtx, 'V2', -eA, 0, '#ffffff');
+            document.getElementById('e-ecc').textContent = ee.toFixed(2);
+
             if(mouseE.hover) {
                 let eang = Math.atan2(mouseE.y, mouseE.x), epx = eA*Math.cos(eang), epy = eB*Math.sin(eang);
                 eCtx.strokeStyle = 'rgba(255,51,102,0.5)'; eCtx.beginPath(); eCtx.moveTo(epx,epy); eCtx.lineTo(ec,0); eCtx.stroke();
                 eCtx.strokeStyle = 'rgba(255,119,0,0.5)'; eCtx.beginPath(); eCtx.moveTo(epx,epy); eCtx.lineTo(-ec,0); eCtx.stroke();
                 eCtx.fillStyle = '#00ff88'; eCtx.beginPath(); eCtx.arc(epx,epy,7,0,7); eCtx.fill();
+                drawLabel(eCtx, 'P', epx, epy, '#00ff88');
                 const ed1 = Math.sqrt((epx-ec)**2+epy**2), ed2 = Math.sqrt((epx+ec)**2+epy**2);
                 document.getElementById('e-sum').textContent = (ed1 + ed2).toFixed(2);
                 document.getElementById('e-target').textContent = (2*eA).toFixed(2);
@@ -416,18 +451,25 @@
 
             // --- HYPERBOLA ---
             hCtx.save(); hCtx.clearRect(0,0,hCanvas.width, hCanvas.height); hCtx.translate(hCanvas.width/2, hCanvas.height/2); hCtx.scale(dpr, -dpr); drawG(hCtx, hCanvas.width/dpr, hCanvas.height/dpr);
-            let hc = Math.sqrt(hA*hA + hB*hB);
+            let hc = Math.sqrt(hA*hA + hB*hB), he = hc/hA;
             hCtx.strokeStyle = '#bc00ff'; hCtx.lineWidth = 2.5;
             [-1, 1].forEach(s => {
                 hCtx.beginPath(); for(let x=hA; x<300; x++) { let y = hB*Math.sqrt((x/hA)**2-1); if(x===hA) hCtx.moveTo(s*x,y); else hCtx.lineTo(s*x,y); } hCtx.stroke();
                 hCtx.beginPath(); for(let x=hA; x<300; x++) { let y = -hB*Math.sqrt((x/hA)**2-1); if(x===hA) hCtx.moveTo(s*x,y); else hCtx.lineTo(s*x,y); } hCtx.stroke();
             });
             hCtx.fillStyle = '#ff3366'; hCtx.beginPath(); hCtx.arc(hc,0,5,0,7); hCtx.fill(); hCtx.beginPath(); hCtx.arc(-hc,0,5,0,7); hCtx.fill();
+            drawLabel(hCtx, 'F1', hc, 0, '#ff3366');
+            drawLabel(hCtx, 'F2', -hc, 0, '#ff3366');
+            drawLabel(hCtx, 'V1', hA, 0, '#ffffff');
+            drawLabel(hCtx, 'V2', -hA, 0, '#ffffff');
+            document.getElementById('h-ecc').textContent = he.toFixed(2);
+
             if(mouseH.hover) {
                 let hpx = Math.max(Math.abs(mouseH.x), hA) * (mouseH.x < 0 ? -1 : 1), hpy = hB*Math.sqrt((hpx/hA)**2-1) * (mouseH.y < 0 ? -1 : 1);
                 hCtx.strokeStyle = 'rgba(255,51,102,0.5)'; hCtx.beginPath(); hCtx.moveTo(hpx,hpy); hCtx.lineTo(hc,0); hCtx.stroke();
                 hCtx.strokeStyle = 'rgba(255,119,0,0.5)'; hCtx.beginPath(); hCtx.moveTo(hpx,hpy); hCtx.lineTo(-hc,0); hCtx.stroke();
-                hCtx.fillStyle = '#00ff88'; hCtx.beginPath(); hCtx.arc(hpx,py,7,0,7); hCtx.fill();
+                hCtx.fillStyle = '#00ff88'; hCtx.beginPath(); hCtx.arc(hpx,hpy,7,0,7); hCtx.fill();
+                drawLabel(hCtx, 'P', hpx, hpy, '#00ff88');
                 document.getElementById('h-diff').textContent = Math.abs(Math.sqrt((hpx-hc)**2+hpy**2) - Math.sqrt((hpx+hc)**2+hpy**2)).toFixed(2);
                 document.getElementById('h-target').textContent = (2*hA).toFixed(2);
             } else { drawA(hCtx, hA, hB, '#00d1ff', '#ffcc00'); }
